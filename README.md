@@ -1,2 +1,2 @@
 # MQTTSensor
-An application to interface sensors to JMRI using MQTT.
+A library to interface sensors to JMRI using MQTT.
