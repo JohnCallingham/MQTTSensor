@@ -1,13 +1,19 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <MQTTSensor.h>
+#include <MQTTSensorContainer.h>
+#include <WebSocketsServer.h>
 
-const char* ssid = "BT-SCAKPC";
-const char* password = "btvxqTve4aPQkr";
+const char* ssid = "YOUR_SSID";
+const char* password = "YOUR_PASSWORD";
 
 WiFiClient wifiClient;
-MQTTSensor Sensor1(5, "trains/track/sensor/456", wifiClient);
-MQTTSensor Sensor2(4, "trains/track/sensor/789", wifiClient);
+PubSubClient mqttClient;
+WebSocketsServer webSocket(81);
+
+MQTTSensorContainer container;
+MQTTSensor* sensor1 = container.addSensor(5, "trains/track/sensor/456");
+MQTTSensor* sensor2 = container.addSensor(4, "trains/track/sensor/789");
 
 // Forward declarations.
 void connectToWiFi();
@@ -17,13 +23,16 @@ void setup() {
 
   connectToWiFi();
 
-  Sensor1.setDebounceDelay_mS(100);
-  //Sensor1.setStartupTopic("events");
+  webSocket.begin();
+
+  container.setStartupTopic("events"); // Sets the startup topic for the container and all sensors.
+  sensor1->setDebounceDelay_mS(5);
+  sensor2->setDebounceDelay_mS(5);
 }
 
 void loop() {
-  Sensor1.update();
-  Sensor2.update();
+  webSocket.loop();
+  container.loop(); // Calls the loop method of all MQTTSensor objects which have been added to the container.
 }
 
 void connectToWiFi() {

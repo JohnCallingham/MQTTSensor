@@ -1,33 +1,36 @@
-#include <ESP8266WiFi.h>
+#ifndef MQTT_SENSOR_H
+#define MQTT_SENSOR_H
+
 #include <PubSubClient.h>
+#include <WebSocketsServer.h>
 
 class MQTTSensor {
     public:
-        MQTTSensor(uint8_t pinNumber, const char* sensorTopic, WiFiClient& wifiClient);
+        MQTTSensor(uint8_t pinNumber, const char* sensorTopic);
 
-        void update();
+        void loop();
 
-        void setBroker(const char* mqttBroker);
-        void setPort(uint16_t mqttPort);
-        void setStartupTopic(const char* startupTopic);
-        void setDebounceDelay_mS(unsigned long debounceDelay_mS);
+        void setDebounceDelay_mS(unsigned long debounceDelay_mS) {this->debounceDelay_mS = debounceDelay_mS;}
 
+        uint8_t getPinNumber() {return this->pinNumber;}
+        const char* getSensorTopic() {return this->sensorTopic;}
+
+        void publishMQTTSensor();
+        
     private:
-        WiFiClient wifiClient;
-        PubSubClient mqttClient;
         uint8_t pinNumber;
-        const char* mqttBroker;
-        uint16_t mqttPort;
-
+        const char* mqttBroker = "raspberrypi";
+        uint16_t mqttPort = 1883;
 
         const char* sensorTopic;
-        const char* startupTopic;
 
         void connectToMQTT();
-        void publishMQTTSensor(const char* topic, const char* payload);
+        void readPin();
 
-        unsigned long debounceDelay_mS;
+        unsigned long debounceDelay_mS = 50;
         int currentState;
         int lastState;
         unsigned long lastTime;
+
 };
+#endif
